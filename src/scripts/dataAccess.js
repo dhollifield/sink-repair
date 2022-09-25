@@ -71,5 +71,7 @@ export const saveCompletion = async (completion) => {
 
 export const deleteRequest = async (id) => {
   await fetch(`${API}/requests/${id}`, { method: "DELETE" })
+
+  const mainContainer = document.querySelector("#container")
   mainContainer.dispatchEvent(new CustomEvent("stateChanged"))
 }

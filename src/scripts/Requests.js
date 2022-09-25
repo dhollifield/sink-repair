@@ -13,59 +13,52 @@ mainContainer.addEventListener(
     "change",
     (event) => {
         if (event.target.id === "plumbers") {
-            const [requestId, plumberId, date_created] = event.target.value.split("--")
+            const [requestId, plumberId] = event.target.value.split("--")
 
-            /*
-                This object should have 3 properties
-                   1. requestId
-                   2. plumberId
-                   3. date_created
-            */
-
-            let completion = getCompletions()
-            
-            completion = { 
+            const completion = { 
                 requestId: requestId,
                 plumberId: plumberId,
-                date_created: date_created
+                date_created: Date.now()
             }
 
-            /*
-                Invoke the function that performs the POST request
-                to the `completions` resource for your API. Send the
-                completion object as a parameter.
-             */
-
             saveCompletion(completion)
+            document.dispatchEvent(new CustomEvent("stateChanged"))
         }
     }
 )
 
 export const Requests = () => {
-    let html = "<ul>"
-
+    
     const requests = getRequests()
-
     const plumbers = getPlumbers()
-
-    const listRequests = requests.map(request => {
-        return `
-            <li>
+    const completions = getCompletions()
+    
+    const convertRequestToListItems = (request) => {
+        let html = ""
+        if (completions.find((x) => x.requestId == request.id)) {
+            return html += `<div class="request complete">
+            ${request.description}
+            <button class="request__delete" id="request--${request.id}">
+                    Delete
+                </button>
+            </div>`
+        } else {
+            return `<div class="request">
                 ${request.description}
                 <select class="plumbers" id="plumbers">
                 <option value="">Choose</option>
-                    ${plumbers.map(plumber => {
-                        return `<option value="${request.id}--${plumber.id}">${plumber.name}</option>`}).join("")}
-                </select>
+                ${plumbers.map(plumber => {
+                    return `<option value="${request.id}--${plumber.id}">${plumber.name}</option>`}).join("")}
+                    
+            </select>
                 <button class="request__delete" id="request--${request.id}">
-                    Delete
+                Delete
                 </button>
-            </li>
-            `
-    })
-    
-    html += listRequests.join("")
-    html += "</ul>"
-
-    return html
+                </div>`
+                }
+            }
+                
+                let html = `${requests.map(convertRequestToListItems).join("")}`
+                
+                return html
 }
